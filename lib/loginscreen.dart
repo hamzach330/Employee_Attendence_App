@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -14,6 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isKeyboardVisible =
+        KeyboardVisibilityProvider.isKeyboardVisible(context);
+
     TextEditingController idController = TextEditingController();
     TextEditingController passController = TextEditingController();
 
@@ -21,29 +25,36 @@ class _LoginScreenState extends State<LoginScreen> {
     screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
+          isKeyboardVisible
+              ? SizedBox(
+                  height: screenHeight / 15,
+                )
+              : Container(
+                  height: screenHeight / 2.5,
+                  width: screenWidth,
+                  decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(50),
+                          bottomLeft: Radius.circular(50))),
+                  child: Center(
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: screenWidth / 5,
+                    ),
+                  ),
+                ),
           Container(
-            height: screenHeight / 2.5,
-            width: screenWidth,
-            decoration: BoxDecoration(
-                color: primary,
-                borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(50),
-                    bottomLeft: Radius.circular(50))),
-            child: Center(
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-                size: screenWidth / 5,
-              ),
-            ),
-          ),
-          Container(
+              margin: EdgeInsets.only(
+                  top: screenHeight / 20, bottom: screenHeight / 20),
               child: Text(
-            "Login",
-            style: TextStyle(fontSize: screenWidth / 12),
-          )),
+                "Login",
+                style: TextStyle(fontSize: screenWidth / 12),
+              )),
           Container(
             alignment: Alignment.centerLeft,
             margin: EdgeInsets.symmetric(horizontal: screenWidth / 12),
@@ -51,7 +62,26 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 feildTitle("Employee ID"),
-                feildInput("Enter Employee ID",idController)
+                feildInput("Enter Employee ID", idController, false),
+                feildTitle("Password"),
+                feildInput("Enter Password", passController, true),
+                Container(
+                  height: 60,
+                  width: screenWidth,
+                  decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(30))),
+                  child: Center(
+                    child: Text(
+                      "Login",
+                      style: TextStyle(
+                          fontSize: screenWidth / 20,
+                          color: Colors.white,
+                          letterSpacing: 2),
+                    ),
+                  ),
+                )
               ],
             ),
           )
@@ -74,9 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget feildInput(String hintText, TextEditingController controller) {
+  Widget feildInput(
+      String hintText, TextEditingController controller, bool obsure) {
     return Container(
       width: screenWidth,
+      margin: EdgeInsets.only(bottom: screenHeight / 30),
       decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -107,6 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: InputBorder.none,
                   hintText: hintText),
               maxLines: 1,
+              obscureText: obsure,
             ),
           ))
         ],
