@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "677514698939",
+    "project_id": "employeeattendance-62e60",
+    "storage_bucket": "employeeattendance-62e60.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677514698939:android:23401c61b59509db10099e",
+        "android_client_info": {
+          "package_name": "com.example.employee_attendance_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677514698939-crc1ra6irk0od6octf2r7kde4ao86hfq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtyfmYeq4uGDFzj-SoJQ8xa-Qi00fZplY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677514698939-crc1ra6irk0od6octf2r7kde4ao86hfq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "677514698939-3ar0f36gv9279jrd8uieuc4fuqnennp1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.employeeAttendanceApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
