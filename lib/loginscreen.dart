@@ -1,5 +1,10 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter/foundation.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -65,20 +70,83 @@ class _LoginScreenState extends State<LoginScreen> {
                 feildInput("Enter Employee ID", idController, false),
                 feildTitle("Password"),
                 feildInput("Enter Password", passController, true),
-                Container(
-                  height: 60,
-                  width: screenWidth,
-                  decoration: BoxDecoration(
-                      color: primary,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(30))),
-                  child: Center(
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                          fontSize: screenWidth / 20,
-                          color: Colors.white,
-                          letterSpacing: 2),
+                GestureDetector(
+                  onTap: () async {
+                    /// Get Values from the text input
+                    String id = idController.text.trim();
+                    String password = passController.text.trim();
+
+                    /// validating if the input fields are not empty
+                    if (id.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Please Enter Employee ID"),
+                      ));
+
+                      /*Fluttertoast.showToast(
+                          msg: "This is a Toast message",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 2,
+                          textColor: Colors.white,
+                          fontSize: 16.0);*/
+
+
+                    } else if (password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Please Enter Employee Password"),
+                      ));
+                    } else {
+                      /// making query to firebase datastore to get the values
+                      QuerySnapshot snap = await FirebaseFirestore.instance
+                          .collection("Employee")
+                          .where('empId', isEqualTo: id)
+                          .get();
+
+                      try {
+                        if (password == snap.docs[0]['password']) {
+                          print("Continue");
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text("Password is Incorrect"),
+                          ));
+                        }
+                      } catch (e) {
+
+                        String error = "";
+
+                        if (e.toString() == "RangeError (index): Invalid value: Valid value range is empty: 0")
+                          {
+                            setState(() {
+                              error = "Employee Id not Found Please Enter valid EmpID and Password";
+                            });
+                          }
+                        else{
+                          setState(() {
+                            error = "Error Occurred";
+                          });
+                        }
+                        print(e.toString());
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(error),
+                        ));
+                      }
+                    }
+                  },
+                  child: Container(
+                    height: 60,
+                    width: screenWidth,
+                    decoration: BoxDecoration(
+                        color: primary,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(30))),
+                    child: Center(
+                      child: Text(
+                        "Login",
+                        style: TextStyle(
+                            fontSize: screenWidth / 20,
+                            color: Colors.white,
+                            letterSpacing: 2),
+                      ),
                     ),
                   ),
                 )
@@ -132,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: EdgeInsets.only(right: screenWidth / 12),
             child: TextFormField(
               enableSuggestions: false,
+              controller: controller,
               autocorrect: false,
               decoration: InputDecoration(
                   contentPadding:
