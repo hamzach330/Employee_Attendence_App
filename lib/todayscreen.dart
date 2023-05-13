@@ -19,6 +19,43 @@ class _TodayScreenState extends State<TodayScreen> {
   double screenWidth = 0;
   Color primary = const Color(0xffeef444c);
 
+  String checkIn = "--/--";
+  String checkOut = "--/--";
+
+  @override
+  void initState() {
+    super.initState();
+    _getRecord();
+  }
+
+  void _getRecord() async {
+    try {
+      QuerySnapshot snap = await FirebaseFirestore.instance
+          .collection("Employee")
+          .where('empId', isEqualTo: User.userName)
+          .get();
+
+      DocumentSnapshot snap2 = await FirebaseFirestore.instance
+          .collection("Employee")
+          .doc(snap.docs[0].id)
+          .collection("Record")
+          .doc(DateFormat('dd MMMM yyyy').format(DateTime.now()))
+          .get();
+
+      setState(() {
+        checkIn = snap2['checkIn'];
+        checkOut = snap2['checkOut'];
+      });
+    } catch (e) {
+      print(e.toString());
+      checkIn = "--/--";
+      checkOut = "--/--";
+    }
+
+    print(checkIn);
+    print(checkOut);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isKeyboardVisible =
@@ -92,11 +129,14 @@ class _TodayScreenState extends State<TodayScreen> {
                           color: Colors.black54,
                           fontWeight: FontWeight.normal),
                     ),
-                    Text("09:30",
-                        style: TextStyle(
-                            fontSize: screenWidth / 18,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold)),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(checkIn,
+                          style: TextStyle(
+                              fontSize: screenWidth / 18,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 )),
                 Expanded(
@@ -109,11 +149,14 @@ class _TodayScreenState extends State<TodayScreen> {
                             fontSize: screenWidth / 20,
                             color: Colors.black54,
                             fontWeight: FontWeight.normal)),
-                    Text("--/--",
-                        style: TextStyle(
-                            fontSize: screenWidth / 18,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold))
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(checkOut,
+                          style: TextStyle(
+                              fontSize: screenWidth / 18,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold)),
+                    )
                   ],
                 )),
               ],
@@ -152,66 +195,89 @@ class _TodayScreenState extends State<TodayScreen> {
                   )),
                 );
               }),
-          Container(
-            margin: const EdgeInsets.only(top: 32),
-            child: Builder(builder: (context) {
-              final GlobalKey<SlideActionState> key = GlobalKey();
-              return SlideAction(
-                text: "Slide to Check Out",
-                textStyle: TextStyle(
-                  color: Colors.black54,
-                  fontSize: screenWidth / 20,
-                ),
-                outerColor: Colors.white,
-                innerColor: primary,
-                key: key,
-                onSubmit: () async {
+          checkOut == "--/--"
+              ? Container(
+                  margin: const EdgeInsets.only(top: 32),
+                  child: Builder(builder: (context) {
+                    final GlobalKey<SlideActionState> key = GlobalKey();
+                    return SlideAction(
+                      text: checkIn == "--/--"
+                          ? "Slide to Check In"
+                          : "Slide to Check Out",
+                      textStyle: TextStyle(
+                        color: Colors.black54,
+                        fontSize: screenWidth / 20,
+                      ),
+                      outerColor: Colors.white,
+                      innerColor: primary,
+                      key: key,
+                      onSubmit: () async {
+                        //print(DateFormat('hh:mm').format(DateTime.now()));
+                        QuerySnapshot snap = await FirebaseFirestore.instance
+                            .collection("Employee")
+                            .where('empId', isEqualTo: User.userName)
+                            .get();
 
-                  //print(DateFormat('hh:mm').format(DateTime.now()));
-                  QuerySnapshot snap = await FirebaseFirestore.instance
-                      .collection("Employee")
-                      .where('empId', isEqualTo: User.userName)
-                      .get();
+                        DocumentSnapshot snap2 = await FirebaseFirestore
+                            .instance
+                            .collection("Employee")
+                            .doc(snap.docs[0].id)
+                            .collection("Record")
+                            .doc(DateFormat('dd MMMM yyyy')
+                                .format(DateTime.now()))
+                            .get();
 
-                  //print(snap.docs[0].id);
+                        try {
+                          String checkIn = snap2['checkIn'];
+                          await FirebaseFirestore.instance
+                              .collection("Employee")
+                              .doc(snap.docs[0].id)
+                              .collection("Record")
+                              .doc(DateFormat('dd MMMM yyyy')
+                                  .format(DateTime.now()))
+                              .update({
+                            'checkIn': checkIn,
+                            'checkOut':
+                                DateFormat('hh:mm:ss').format(DateTime.now()),
+                          });
+                          //key.currentState!.reset();
+                          setState(() {
+                            checkIn = checkIn;
+                            checkOut = DateFormat('hh:mm:ss').format(DateTime.now());
+                          });
 
-                  DocumentSnapshot snap2 = await FirebaseFirestore.instance
-                      .collection("Employee")
-                      .doc(snap.docs[0].id)
-                      .collection("Record")
-                      .doc(DateFormat('dd MMMM yyyy').format(DateTime.now()))
-                      .get();
+                        } catch (e) {
+                          await FirebaseFirestore.instance
+                              .collection("Employee")
+                              .doc(snap.docs[0].id)
+                              .collection("Record")
+                              .doc(DateFormat('dd MMMM yyyy')
+                                  .format(DateTime.now()))
+                              .set({
+                            'checkIn': DateFormat('hh:mm:ss').format(DateTime.now()),
+                          });
 
-                  try {
-                    String checkIn = snap2['checkIn'];
-                    await FirebaseFirestore.instance
-                        .collection("Employee")
-                        .doc(snap.docs[0].id)
-                        .collection("Record")
-                        .doc(DateFormat('dd MMMM yyyy').format(DateTime.now()))
-                        .update({
-                      'checkIn' : checkIn,
-                      'checkOut' : DateFormat('hh:mm:ss').format(DateTime.now()),
-                    });
-                    key.currentState!.reset();
+                          setState(() {
+                            checkIn = DateFormat('hh:mm:ss').format(DateTime.now());
+                          });
 
-                  } catch (e) {
-                    await FirebaseFirestore.instance
-                        .collection("Employee")
-                        .doc(snap.docs[0].id)
-                        .collection("Record")
-                        .doc(DateFormat('dd MMMM yyyy').format(DateTime.now()))
-                        .set({
-                      'checkIn' : DateFormat('hh:mm:ss').format(DateTime.now()),
-                    });
-                    key.currentState!.reset();
-                  }
-
-
-                },
-              );
-            }),
-          )
+                          //key.currentState!.reset();
+                        }
+                      },
+                    );
+                  }),
+                ) : Container(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 25),
+                    child: Text(
+                      "You have Completed your day.",
+                      style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: screenWidth / 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
         ],
       ),
     ));
