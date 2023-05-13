@@ -1,10 +1,12 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:employee_attendance_app/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -28,6 +30,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     screenWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
+
+    late SharedPreferences sharedPreferences;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -82,14 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         content: Text("Please Enter Employee ID"),
                       ));
 
-                      /*Fluttertoast.showToast(
-                          msg: "This is a Toast message",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 2,
-                          textColor: Colors.white,
-                          fontSize: 16.0);*/
-
 
                     } else if (password.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -102,9 +98,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           .where('empId', isEqualTo: id)
                           .get();
 
+
                       try {
                         if (password == snap.docs[0]['password']) {
-                          print("Continue");
+
+                          /// saving the loggedIn User in the shared preferences for future usage
+                          sharedPreferences = await SharedPreferences.getInstance();
+                          sharedPreferences.setString("employeeId", id).then((_) {
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen() ));
+                          });
+                          //sharedPreferences.setString("password", password);
+
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text("Password is Incorrect"),
@@ -216,3 +220,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
+
+///
+
+                          /*Fluttertoast.showToast(
+                          msg: "This is a Toast message",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 2,
+                          textColor: Colors.white,
+                          fontSize: 16.0);*/
